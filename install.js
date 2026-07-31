@@ -85,7 +85,8 @@ module.exports = async kernel =>
 				{
 					message:
 					[
-						'conda install nvidia/label/cuda-12.9.1::cuda-runtime nvidia/label/cudnn-9.10.2::cudnn --yes',
+						'conda clean --packages --tarballs --yes',
+						'conda install nvidia/label/cuda-12.9.1::cuda-runtime nvidia/label/cudnn-9.10.2::cudnn --force-reinstall --yes',
 						'pip install tensorrt==10.12.0.36 --extra-index-url https://pypi.nvidia.com'
 					],
 					conda:
@@ -121,7 +122,7 @@ module.exports = async kernel =>
 					message:
 					[
 						'pip install nvidia-cublas-cu12 nvidia-cudnn-cu12 nvidia-cuda-runtime-cu12 nvidia-cuda-nvrtc-cu12 nvidia-cufft-cu11 nvidia-cufft-cu12',
-						'python -c "import os, sys, shutil; env=sys.prefix; nv=os.path.join(env, \'Lib\', \'site-packages\', \'nvidia\'); lib_bin=os.path.join(env, \'Library\', \'bin\'); ort=os.path.join(env, \'Lib\', \'site-packages\', \'onnxruntime\', \'capi\'); os.makedirs(lib_bin, exist_ok=True); os.makedirs(ort, exist_ok=True); [(shutil.copy2(os.path.join(r, f), lib_bin), shutil.copy2(os.path.join(r, f), ort)) for r, d, fs in os.walk(nv) for f in fs if f.endswith(\'.dll\') if os.path.exists(nv)]; print(\'=== CUDA DLLs Copied ===\')"'
+						'python -c "import os, sys, shutil; env=sys.prefix; nv=os.path.join(env, \'Lib\', \'site-packages\', \'nvidia\'); lib_bin=os.path.join(env, \'Library\', \'bin\'); ort=os.path.join(env, \'Lib\', \'site-packages\', \'onnxruntime\', \'capi\'); os.makedirs(lib_bin, exist_ok=True); os.makedirs(ort, exist_ok=True); [(shutil.copy2(os.path.join(r, f), lib_bin), shutil.copy2(os.path.join(r, f), ort)) for r, d, fs in os.walk(nv) for f in fs if f.endswith(\'.dll\') if os.path.exists(nv)]; print(\'=== CUDA DLLs wurden erfolgreich kopiert ===\')"'
 					],
 					conda:
 					{
