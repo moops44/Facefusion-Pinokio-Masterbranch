@@ -6,21 +6,21 @@ function install(kernel)
 
 	if (platform === 'linux' && gpu === 'amd')
 	{
-		return 'python install.py --onnxruntime migraphx';
+		return 'python install.py migraphx';
 	}
 	if (platform === 'win32' && gpu === 'amd')
 	{
-		return 'python install.py --onnxruntime directml';
+		return 'python install.py directml';
 	}
 	if ((platform === 'linux' || platform === 'win32') && gpu === 'intel')
 	{
-		return 'python install.py --onnxruntime openvino';
+		return 'python install.py openvino';
 	}
 	if ((platform === 'linux' || platform === 'win32') && gpu === 'nvidia')
 	{
-		return 'python install.py --onnxruntime cuda';
+		return 'python install.py cuda';
 	}
-	return 'python install.py --onnxruntime default';
+	return 'python install.py default';
 }
 
 module.exports = async kernel =>
@@ -34,6 +34,14 @@ module.exports = async kernel =>
 				params:
 				{
 					message: 'git clone https://github.com/facefusion/facefusion --branch master --single-branch'
+				}
+			},
+			{
+				method: 'fs.copy',
+				params:
+				{
+					src: path.resolve(__dirname, 'install.py'),
+					dest: path.resolve(__dirname, 'facefusion', 'install.py')
 				}
 			},
 			{
@@ -86,6 +94,20 @@ module.exports = async kernel =>
 					[
 						'conda install nvidia/label/cuda-12.9.1::cuda-runtime nvidia/label/cudnn-9.10.2::cudnn --yes',
 						'pip install tensorrt==10.12.0.36 --extra-index-url https://pypi.nvidia.com'
+					],
+					conda:
+					{
+						path: path.resolve(__dirname, '.env')
+					}
+				}
+			},
+			{
+				method: 'shell.run',
+				params:
+				{
+					message:
+					[
+						'conda install -c conda-forge --force-reinstall libintl gettext fontconfig ffmpeg glib --yes'
 					],
 					conda:
 					{
