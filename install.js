@@ -55,18 +55,10 @@ module.exports = async kernel =>
 				method: 'shell.run',
 				params:
 				{
-					message: 'conda install python=3.12 --yes',
-					conda:
-					{
-						path: path.resolve(__dirname, '.env')
-					}
-				}
-			},
-			{
-				method: 'shell.run',
-				params:
-				{
-					message: 'conda install conda-forge::ffmpeg=7.0.2 conda-forge::libvorbis=1.3.7 --yes',
+					message: [
+						'conda config --set channel_priority strict',
+						'conda install -c conda-forge python=3.12 ffmpeg=7.0.2 libvorbis=1.3.7 --yes'
+					],
 					conda:
 					{
 						path: path.resolve(__dirname, '.env')
@@ -78,7 +70,7 @@ module.exports = async kernel =>
 				method: 'shell.run',
 				params:
 				{
-					message: 'conda install conda-forge::openvino=2025.1.0 --yes',
+					message: 'conda install -c conda-forge openvino=2025.1.0 --yes',
 					conda:
 					{
 						path: path.resolve(__dirname, '.env')
@@ -94,20 +86,6 @@ module.exports = async kernel =>
 					[
 						'conda install nvidia/label/cuda-12.9.1::cuda-runtime nvidia/label/cudnn-9.10.2::cudnn --yes',
 						'pip install tensorrt==10.12.0.36 --extra-index-url https://pypi.nvidia.com'
-					],
-					conda:
-					{
-						path: path.resolve(__dirname, '.env')
-					}
-				}
-			},
-			{
-				method: 'shell.run',
-				params:
-				{
-					message:
-					[
-						'conda install -c conda-forge --force-reinstall libintl gettext fontconfig ffmpeg glib --yes'
 					],
 					conda:
 					{
