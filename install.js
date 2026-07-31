@@ -56,8 +56,9 @@ module.exports = async kernel =>
 				params:
 				{
 					message: [
-						'conda config --set channel_priority strict',
-						'conda install -c conda-forge python=3.12 ffmpeg=7.0.2 libvorbis=1.3.7 --yes'
+						'conda config --env --add channels conda-forge',
+						'conda config --env --set channel_priority strict',
+						'conda install -c conda-forge python=3.12 ffmpeg=7.0.2 libvorbis=1.3.7 gettext libintl glib --yes'
 					],
 					conda:
 					{
@@ -110,6 +111,22 @@ module.exports = async kernel =>
 							break: false
 						}
 					]
+				}
+			},
+			{
+				when: '{{ platform === "win32" && gpu === "nvidia" }}',
+				method: 'shell.run',
+				params:
+				{
+					message:
+					[
+						'pip install nvidia-cublas-cu12 nvidia-cudnn-cu12 nvidia-cuda-runtime-cu12 nvidia-cuda-nvrtc-cu12 nvidia-cufft-cu11 nvidia-cufft-cu12',
+						'python -c "import os, sys, shutil; env=sys.prefix; nv=os.path.join(env, \'Lib\', \'site-packages\', \'nvidia\'); lib_bin=os.path.join(env, \'Library\', \'bin\'); ort=os.path.join(env, \'Lib\', \'site-packages\', \'onnxruntime\', \'capi\'); os.makedirs(lib_bin, exist_ok=True); os.makedirs(ort, exist_ok=True); [(shutil.copy2(os.path.join(r, f), lib_bin), shutil.copy2(os.path.join(r, f), ort)) for r, d, fs in os.walk(nv) for f in fs if f.endswith(\'.dll\') if os.path.exists(nv)]; print(\'=== CUDA DLLs Copied ===\')"'
+					],
+					conda:
+					{
+						path: path.resolve(__dirname, '.env')
+					}
 				}
 			},
 			{
