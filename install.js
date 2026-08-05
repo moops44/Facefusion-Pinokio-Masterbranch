@@ -5,13 +5,18 @@ const path = require('path');
  */
 const cleanCorruptedPkgsScript = "import os, glob, shutil, sys; dirs = [os.path.abspath(os.path.join(sys.prefix, '../../../bin/miniforge/pkgs')), os.path.join(os.path.dirname(sys.executable), 'pkgs')]; [shutil.rmtree(f, ignore_errors=True) if os.path.isdir(f) else os.remove(f) for d in dirs if os.path.exists(d) for p in ['*libcublas*', '*libcudnn*'] for f in glob.glob(os.path.join(d, p))]; print('=== Conda cache cleaned ===')";
 
+/**
+ * Script to clean stale __pycache__ folders to prevent import errors when switching versions
+ */
+const cleanPycacheScript = "import os, shutil; [shutil.rmtree(os.path.join(r, d), ignore_errors=True) for r, ds, _ in os.walk('.') for d in ds if d == '__pycache__']; print('=== PyCache cleaned ===')";
+
 function install(kernel)
 {
 	const { platform, gpu } = kernel;
 
 	if (platform === 'linux' && gpu === 'amd')
 	{
-		return 'python install.py migraphx';
+		return 'python install.py directml';
 	}
 	if (platform === 'win32' && gpu === 'amd')
 	{
@@ -23,7 +28,8 @@ function install(kernel)
 	}
 	if ((platform === 'linux' || platform === 'win32') && gpu === 'nvidia')
 	{
-		return 'python install.py cuda';
+		// Updated from 'cuda' to 'cuda@12' to match new install.py syntax
+		return 'python install.py cuda@12';
 	}
 	return 'python install.py default';
 }
@@ -35,10 +41,51 @@ module.exports = async kernel =>
 		run:
 		[
 			{
+				// Hard reset / wipe .env directory before starting
+				method: 'fs.rm',
+				params:
+				{
+					path: path.resolve(__dirname, '.env')
+				}
+			},
+			{
 				method: 'shell.run',
 				params:
 				{
-					message: 'git clone https://github.com/facefusion/facefusion --branch master --single-branch'
+					message: 'git clone https://github.com/facefusion/facefusion --branch master --single-branch',
+					on:
+					[
+						{
+							event: '/error:/i',
+							break: false
+						}
+					]
+				}
+			},
+			{
+				method: 'shell.run',
+				params:
+				{
+					message:
+					[
+						'git reset --hard',
+						'git clean -fd',
+						'git checkout master',
+						'git pull',
+						`python -c "${cleanPycacheScript}"`
+					],
+					path: 'facefusion',
+					conda:
+					{
+						path: path.resolve(__dirname, '.env')
+					},
+					on:
+					[
+						{
+							event: '/error:/i',
+							break: false
+						}
+					]
 				}
 			},
 			{
